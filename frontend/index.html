@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Docsync</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<section id="auth-section" class="auth-section">
+  <div class="auth-card">
+    <div class="brand-mark">Docsync</div>
+    <p class="auth-tagline">Real-time collaborative writing.</p>
+
+    <form id="login-form" class="auth-form">
+      <label>Email<input type="email" id="login-email" required autocomplete="email" /></label>
+      <label>Password<input type="password" id="login-password" required autocomplete="current-password" /></label>
+      <button type="submit" class="btn-primary">Log in</button>
+      <p class="auth-switch">New here? <a href="#" id="show-register">Create an account</a></p>
+    </form>
+
+    <form id="register-form" class="auth-form" hidden>
+      <label>Username<input type="text" id="register-username" required minlength="3" autocomplete="username" /></label>
+      <label>Email<input type="email" id="register-email" required autocomplete="email" /></label>
+      <label>Password<input type="password" id="register-password" required minlength="8" autocomplete="new-password" /></label>
+      <button type="submit" class="btn-primary">Create account</button>
+      <p class="auth-switch">Already have an account? <a href="#" id="show-login">Log in</a></p>
+    </form>
+
+    <p id="auth-error" class="error-text" hidden></p>
+  </div>
+</section>
+
+<section id="app-section" class="app-section" hidden>
+  <header class="app-header">
+    <div class="brand-mark">Docsync</div>
+    <div class="app-header-right">
+      <span id="user-label" class="user-label"></span>
+      <button id="logout-btn" class="btn-secondary">Log out</button>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <div class="dashboard-toolbar">
+      <h1>Your documents</h1>
+      <button id="new-doc-btn" class="btn-primary">+ New document</button>
+    </div>
+    <div id="empty-state" class="empty-state" hidden>
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      <p>No documents yet &mdash; create your first one.</p>
+    </div>
+    <div id="doc-list" class="doc-list"></div>
+  </main>
+</section>
+
+<dialog id="share-dialog" class="share-dialog">
+  <h3>Share &ldquo;<span id="share-doc-title"></span>&rdquo;</h3>
+  <form id="share-form" class="share-form">
+    <input type="email" id="share-email" placeholder="Collaborator's email" required />
+    <select id="share-role">
+      <option value="viewer">Viewer</option>
+      <option value="commenter">Commenter</option>
+      <option value="editor" selected>Editor</option>
+    </select>
+    <button type="submit" class="btn-primary">Add</button>
+  </form>
+  <p id="share-error" class="error-text" hidden></p>
+  <ul id="share-list" class="share-list"></ul>
+  <button id="close-share-dialog" class="btn-secondary" type="button">Close</button>
+</dialog>
+
+<script type="module">
+  import { initAuth } from "./js/auth.js";
+  import "./js/dashboard.js";
+  initAuth();
+</script>
+</body>
+</html>

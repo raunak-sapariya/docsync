@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Docsync</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<link rel="stylesheet" href="vendor/quill.snow.css" />
+<link rel="stylesheet" href="vendor/quill-cursors.css" />
+<link rel="stylesheet" href="css/style.css" />
+
+<script type="importmap">
+{
+  "imports": {
+    "yjs": "./vendor/yjs.mjs",
+    "y-websocket": "./vendor/y-websocket.mjs",
+    "y-quill": "./vendor/y-quill.mjs",
+    "y-protocols/auth": "./vendor/y-protocols/auth.js",
+    "y-protocols/awareness": "./vendor/y-protocols/awareness.js",
+    "y-protocols/sync": "./vendor/y-protocols/sync.js",
+    "lib0/array": "./vendor/lib0/array.js",
+    "lib0/binary": "./vendor/lib0/binary.js",
+    "lib0/broadcastchannel": "./vendor/lib0/broadcastchannel.js",
+    "lib0/buffer": "./vendor/lib0/buffer.js",
+    "lib0/cache": "./vendor/lib0/cache.js",
+    "lib0/component": "./vendor/lib0/component.js",
+    "lib0/conditions": "./vendor/lib0/conditions.js",
+    "lib0/decoding": "./vendor/lib0/decoding.js",
+    "lib0/diff": "./vendor/lib0/diff.js",
+    "lib0/dom": "./vendor/lib0/dom.js",
+    "lib0/encoding": "./vendor/lib0/encoding.js",
+    "lib0/environment": "./vendor/lib0/environment.js",
+    "lib0/error": "./vendor/lib0/error.js",
+    "lib0/eventloop": "./vendor/lib0/eventloop.js",
+    "lib0/function": "./vendor/lib0/function.js",
+    "lib0/index": "./vendor/lib0/index.js",
+    "lib0/indexeddb": "./vendor/lib0/indexeddb.js",
+    "lib0/indexeddbV2": "./vendor/lib0/indexeddbV2.js",
+    "lib0/isomorphic": "./vendor/lib0/isomorphic.js",
+    "lib0/iterator": "./vendor/lib0/iterator.js",
+    "lib0/json": "./vendor/lib0/json.js",
+    "lib0/list": "./vendor/lib0/list.js",
+    "lib0/logging.common": "./vendor/lib0/logging.common.js",
+    "lib0/logging": "./vendor/lib0/logging.js",
+    "lib0/logging.node": "./vendor/lib0/logging.node.js",
+    "lib0/map": "./vendor/lib0/map.js",
+    "lib0/math": "./vendor/lib0/math.js",
+    "lib0/metric": "./vendor/lib0/metric.js",
+    "lib0/mutex": "./vendor/lib0/mutex.js",
+    "lib0/number": "./vendor/lib0/number.js",
+    "lib0/object": "./vendor/lib0/object.js",
+    "lib0/observable": "./vendor/lib0/observable.js",
+    "lib0/pair": "./vendor/lib0/pair.js",
+    "lib0/performance": "./vendor/lib0/performance.js",
+    "lib0/performance.node": "./vendor/lib0/performance.node.js",
+    "lib0/pledge": "./vendor/lib0/pledge.js",
+    "lib0/prng/Mt19937": "./vendor/lib0/prng/Mt19937.js",
+    "lib0/prng/Xoroshiro128plus": "./vendor/lib0/prng/Xoroshiro128plus.js",
+    "lib0/prng/Xorshift32": "./vendor/lib0/prng/Xorshift32.js",
+    "lib0/prng": "./vendor/lib0/prng.js",
+    "lib0/promise": "./vendor/lib0/promise.js",
+    "lib0/queue": "./vendor/lib0/queue.js",
+    "lib0/random": "./vendor/lib0/random.js",
+    "lib0/schema": "./vendor/lib0/schema.js",
+    "lib0/set": "./vendor/lib0/set.js",
+    "lib0/sort": "./vendor/lib0/sort.js",
+    "lib0/statistics": "./vendor/lib0/statistics.js",
+    "lib0/storage": "./vendor/lib0/storage.js",
+    "lib0/string": "./vendor/lib0/string.js",
+    "lib0/symbol": "./vendor/lib0/symbol.js",
+    "lib0/test": "./vendor/lib0/test.js",
+    "lib0/testing": "./vendor/lib0/testing.js",
+    "lib0/time": "./vendor/lib0/time.js",
+    "lib0/trait/equality": "./vendor/lib0/trait/equality.js",
+    "lib0/trait/fingerprint": "./vendor/lib0/trait/fingerprint.js",
+    "lib0/trait/traits": "./vendor/lib0/trait/traits.js",
+    "lib0/tree": "./vendor/lib0/tree.js",
+    "lib0/url": "./vendor/lib0/url.js",
+    "lib0/webcrypto.deno": "./vendor/lib0/webcrypto.deno.js",
+    "lib0/webcrypto": "./vendor/lib0/webcrypto.js",
+    "lib0/webcrypto.node": "./vendor/lib0/webcrypto.node.js",
+    "lib0/webcrypto.react-native": "./vendor/lib0/webcrypto.react-native.js",
+    "lib0/websocket": "./vendor/lib0/websocket.js"
+  }
+}
+</script>
+</head>
+<body class="editor-body">
+
+<header class="editor-topbar">
+  <a href="index.html" class="back-link" aria-label="Back to documents">&larr;</a>
+  <input type="text" id="doc-title-input" class="doc-title-input" />
+  <span id="role-badge" class="role-badge"></span>
+  <div class="editor-topbar-right">
+    <div id="presence-bar" class="presence-bar"></div>
+    <span id="save-status" class="status-pending">Connecting&hellip;</span>
+    <button id="activity-btn" class="btn-secondary" type="button">Activity</button>
+  </div>
+</header>
+
+<aside id="activity-panel" class="activity-panel" hidden>
+  <h3>Activity</h3>
+  <ul id="activity-list"></ul>
+</aside>
+
+<main class="editor-main">
+  <div id="editor"></div>
+</main>
+
+<script src="vendor/quill.js"></script>
+<script src="vendor/quill-cursors.js"></script>
+<script type="module" src="js/editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+-r requirements.txt
+
+pytest==9.1.1
+httpx2==2.12.0  # starlette.testclient's preferred HTTP client -- avoids a
+                # deprecation warning from plain httpx, test-only either way
+ruff==0.16.4
