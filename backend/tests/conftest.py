@@ -13,7 +13,6 @@ os.environ["JWT_SECRET"] = "test-secret-at-least-32-bytes-long-for-hs256"
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from app import models
 from app.config import settings
 from app.database import Base
 from app.main import app
@@ -30,6 +29,10 @@ def schema():
     that engine's pooled connections belong to the TestClient's event loop, and
     seeding it from this one would leave connections bound to a closed loop.
     """
+
+    # Base.metadata is populated transitively by `from app.main import app` --
+    # its routers import every model. Fail loudly if that ever stops being true.
+    assert Base.metadata.tables, "no models registered on Base.metadata"
 
     async def create() -> None:
         engine = create_async_engine(settings.DATABASE_URL)
