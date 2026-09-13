@@ -16,8 +16,3 @@ class Base(DeclarativeBase):
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with SessionLocal() as session:
         yield session
-
-
-async def init_models() -> None:
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)

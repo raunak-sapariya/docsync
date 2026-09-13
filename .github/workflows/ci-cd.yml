@@ -1,8 +1,5 @@
 name: CI/CD
 
-# Push (or open a PR) to dev -> tests run automatically.
-# Push to dev specifically also builds+deploys+opens a PR to main, but only
-# if tests passed first (the `needs: test` below enforces that ordering).
 on:
   push:
     branches: [dev]
@@ -12,8 +9,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    # Real Redis for the test run -- matches how this was developed and
-    # tested locally, see backend/tests/conftest.py.
     services:
       redis:
         image: redis:7-alpine
@@ -36,7 +31,7 @@ jobs:
         working-directory: backend
         run: pip install -r requirements-dev.txt
 
-      - name: Lint (real errors only, not style)
+      - name: Lint
         working-directory: backend
         run: ruff check app/ tests/ --select E9,F
 
@@ -74,8 +69,8 @@ jobs:
             cd ~/docsync
             git pull
             docker compose pull backend
+            docker compose run --rm backend alembic upgrade head
             docker compose up -d
-            docker compose exec -T backend alembic upgrade head
 
       - name: Open PR to main
         if: success()

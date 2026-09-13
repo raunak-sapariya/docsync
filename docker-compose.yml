@@ -49,7 +49,7 @@ services:
       - ./frontend:/site:ro
     command: python3 -m http.server 80
     ports:
-      - "80:80"
+      - "8080:80"
 
 volumes:
   postgres_data:
