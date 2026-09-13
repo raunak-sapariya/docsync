@@ -43,6 +43,12 @@ jobs:
     needs: test
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    # "Open PR to main" has to read existing PRs and create one. Without this
+    # block the default GITHUB_TOKEN is contents-only, and the step dies with
+    # "Resource not accessible by integration (repository.pullRequests)".
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -66,6 +72,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
+            set -e
             cd ~/docsync
             git pull
             docker compose pull backend
@@ -77,10 +84,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr create --base main --head dev \
-            --title "Deploy: $(git log -1 --pretty=%s)" \
-            --body "Opened automatically -- tests passed and this deployed cleanly to staging. Review and merge when ready." \
-            || echo "A PR from dev to main already exists -- nothing new to open."
+          set -euo pipefail
+          title="Deploy: $(git log -1 --pretty=%s)"
+          body="Opened automatically -- tests passed and this deployed cleanly to staging. Review and merge when ready."
+
+          if out=$(gh pr create --base main --head dev --title "$title" --body "$body" 2>&1); then
+            echo "$out"
+          elif grep -qi "already exists" <<<"$out"; then
+            echo "A PR from dev to main already exists -- nothing new to open."
+          else
+            echo "gh pr create failed:" >&2
+            echo "$out" >&2
+            exit 1
+          fi
 
   notify-failure:
     needs: [test, build-and-deploy]
