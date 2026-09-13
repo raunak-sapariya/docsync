@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     SENTRY_DSN: str = "" 
     LOG_LEVEL: str = "INFO"
 
-    SNAPSHOT_INTERVAL_SECONDS: int = 180  # periodic durable save while a doc has active clients
+    SNAPSHOT_INTERVAL_SECONDS: int = 180
 
     # How long an empty room is kept alive before it's snapshotted and torn
     # down. A page refresh drops the socket and reopens it a moment later; the
@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     # version forever.
     SNAPSHOT_RETENTION_COUNT: int = 10
 
-    CORS_ORIGINS: str = "http://localhost:5500,http://127.0.0.1:5500"
+    CORS_ORIGINS: str = "http://localhost:5500,http://127.0.0.1:5500,https://test.rsap.me"
     # CORS_ORIGINS: str = "*"
 
     @property

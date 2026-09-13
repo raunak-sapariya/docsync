@@ -10,7 +10,6 @@ from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
 from .config import settings
-from .database import init_models
 from .logging_config import configure_logging, get_logger
 from .routers import auth as auth_router
 from .routers import documents as documents_router
@@ -50,7 +49,6 @@ else:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_models()
     async with websocket_server:
         snapshot_task = asyncio.create_task(periodic_snapshot_task())
         logger.info("docsync_started", extra={"event": settings.ENVIRONMENT})
