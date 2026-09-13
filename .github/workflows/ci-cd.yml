@@ -43,6 +43,12 @@ jobs:
     needs: test
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    # "Open PR to main" has to read existing PRs and create one. Without this
+    # block the default GITHUB_TOKEN is contents-only, and the step dies with
+    # "Resource not accessible by integration (repository.pullRequests)".
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -59,6 +65,15 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/docsync-backend:latest
 
+      - name: Copy compose config and frontend to staging
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: "docker-compose.yml,frontend/"
+          target: "~/docsync"
+
       - name: Deploy to staging
         uses: appleboy/ssh-action@v1
         with:
@@ -66,9 +81,14 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
+            # ssh-action v1 has no script_stop input, so fail fast explicitly --
+            # otherwise only the last command's exit code reaches the job.
+            set -e
             cd ~/docsync
-            git pull
-            docker compose pull backend
+            export BACKEND_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/docsync-backend:latest"
+            # Pull explicitly so compose never falls back to building from a
+            # ./backend context that does not exist on this host.
+            docker pull "$BACKEND_IMAGE"
             docker compose run --rm backend alembic upgrade head
             docker compose up -d
 
@@ -77,10 +97,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr create --base main --head dev \
-            --title "Deploy: $(git log -1 --pretty=%s)" \
-            --body "Opened automatically -- tests passed and this deployed cleanly to staging. Review and merge when ready." \
-            || echo "A PR from dev to main already exists -- nothing new to open."
+          set -euo pipefail
+          title="Deploy: $(git log -1 --pretty=%s)"
+          body="Opened automatically -- tests passed and this deployed cleanly to staging. Review and merge when ready."
+
+          if out=$(gh pr create --base main --head dev --title "$title" --body "$body" 2>&1); then
+            echo "$out"
+          elif grep -qi "already exists" <<<"$out"; then
+            echo "A PR from dev to main already exists -- nothing new to open."
+          else
+            echo "gh pr create failed:" >&2
+            echo "$out" >&2
+            exit 1
+          fi
 
   notify-failure:
     needs: [test, build-and-deploy]
