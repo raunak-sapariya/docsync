@@ -59,7 +59,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/docsync-backend:latest
 
-      - name: Deploy to staging (Azure VM, or EC2 -- see README)
+      - name: Deploy to staging
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.DEPLOY_HOST }}
