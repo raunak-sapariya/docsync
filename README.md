@@ -147,10 +147,7 @@ Two different things, kept separate on purpose:
   JSON to stdout (`docker compose logs -f backend`), and if you set
   `SENTRY_DSN` in `.env`, `sentry-sdk` also captures every unhandled
   exception with a full stack trace plus forwards ERROR-level log calls,
-  viewable on Sentry's dashboard. Sentry is bundled free with your GitHub
-  Student Developer Pack -- activate it at
-  [sentry.io/for/education](https://sentry.io/for/education), create a
-  project, copy the DSN into `.env`.
+  viewable on Sentry's dashboard.
 
 ## Switching Azure -> AWS
 
@@ -168,15 +165,16 @@ kept in `backend/app/storage/`: `base.py` defines the interface, while
 The VM you deploy to is cloud-agnostic too; deployment uses the same SSH and
 Docker setup either way. See `.github/workflows/ci-cd.yml` for the details.
 
-## Deploying (Azure, via your GitHub Student Pack)
+## Deploying (AWS)
 
-1. Activate **Azure for Students** at
-   [azure.microsoft.com/free/students](https://azure.microsoft.com/free/students)
-   (no card needed, tied to your GitHub Student Pack verification).
-2. Create a small Linux VM (B1s size is enough), install Docker on it.
-3. Create an Azure Storage account + container for snapshots, copy the
-   connection string into your VM's `.env` (`STORAGE_PROVIDER=azure`).
-4. `git clone` this repo onto the VM, `cp .env.example .env` and fill it in,
+1. Create a small Linux EC2 instance, install Docker on it, and configure its
+  security group to allow HTTP/HTTPS traffic.
+2. Create an S3 bucket for snapshots and configure AWS credentials with access
+  to that bucket.
+3. On the VM, set `STORAGE_PROVIDER=aws` in `.env` and fill in
+  `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `S3_BUCKET`.
+4. `git clone` this repo onto the VM, `cp .env.example .env`, and fill in the
+  remaining settings.
    `docker compose up -d`.
 5. Set up the GitHub Actions secrets below so pushes auto-deploy here.
 
