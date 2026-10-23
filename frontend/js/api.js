@@ -57,7 +57,7 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
       const data = await res.json();
       detail = data.detail || detail;
     } catch {
-      /* body wasn't JSON, keep statusText */
+      // Ignore JSON parse errors
     }
     throw new Error(detail);
   }
@@ -73,31 +73,68 @@ export const api = {
       body: { username, email, password },
       auth: false,
     }),
+
   login: (email, password) =>
     request("/auth/login", {
       method: "POST",
       body: { email, password },
       auth: false,
     }),
+
   logout: () => request("/auth/logout", { method: "POST" }),
+
   me: () => request("/auth/me"),
 
   listDocuments: () => request("/documents"),
+
   createDocument: (title) =>
     request("/documents", { method: "POST", body: { title } }),
+
   getDocument: (id) => request(`/documents/${id}`),
+
   getDocumentContent: (id) => request(`/documents/${id}/content`),
+
   renameDocument: (id, title) =>
     request(`/documents/${id}`, { method: "PATCH", body: { title } }),
+
   deleteDocument: (id) => request(`/documents/${id}`, { method: "DELETE" }),
+
   getActivity: (id) => request(`/documents/${id}/activity`),
 
+  listComments: (docId, includeResolved = true) =>
+    request(`/documents/${docId}/comments?include_resolved=${includeResolved}`),
+
+  createCommentThread: (docId, payload) =>
+    request(`/documents/${docId}/comments`, { method: "POST", body: payload }),
+
+  replyToThread: (docId, threadId, body) =>
+    request(`/documents/${docId}/comments/${threadId}/replies`, {
+      method: "POST",
+      body: { body },
+    }),
+  
+  setThreadResolved: (docId, threadId, resolved) =>
+    request(`/documents/${docId}/comments/${threadId}`, {
+      method: "PATCH",
+      body: { resolved },
+    }),
+  
+  deleteThread: (docId, threadId) =>
+    request(`/documents/${docId}/comments/${threadId}`, { method: "DELETE" }),
+
+  deleteComment: (docId, threadId, commentId) =>
+    request(`/documents/${docId}/comments/${threadId}/replies/${commentId}`, {
+      method: "DELETE",
+    }),
+
   listPermissions: (docId) => request(`/documents/${docId}/permissions`),
+
   grantPermission: (docId, email, role) =>
     request(`/documents/${docId}/permissions`, {
       method: "POST",
       body: { email, role },
     }),
+
   revokePermission: (docId, userId) =>
     request(`/documents/${docId}/permissions/${userId}`, { method: "DELETE" }),
 };

@@ -99,6 +99,19 @@
   <div class="editor-topbar-right">
     <div id="presence-bar" class="presence-bar"></div>
     <span id="save-status" class="status-pending">Connecting&hellip;</span>
+    <button
+      id="add-comment-btn"
+      class="btn-secondary"
+      type="button"
+      title="Select text in the document to comment on it"
+      disabled
+      hidden
+    >
+      Add comment
+    </button>
+    <button id="comments-btn" class="btn-secondary" type="button">
+      Comments <span id="comment-count" class="comment-count" hidden></span>
+    </button>
     <button id="activity-btn" class="btn-secondary" type="button">Activity</button>
   </div>
 </header>
@@ -108,9 +121,33 @@
   <ul id="activity-list"></ul>
 </aside>
 
-<main class="editor-main">
-  <div id="editor"></div>
-</main>
+<div class="editor-shell">
+  <main class="editor-main">
+    <div id="editor"></div>
+  </main>
+
+  <aside id="comments-panel" class="comments-panel" hidden>
+    <header class="comments-panel-head">
+      <h3>Comments</h3>
+      <label class="comments-filter">
+        <input type="checkbox" id="show-resolved" />
+        Show resolved
+      </label>
+    </header>
+
+    <div id="comment-composer" class="comment-composer" hidden>
+      <p class="comment-quote" id="composer-quote"></p>
+      <textarea id="composer-body" rows="3" placeholder="Add a comment&hellip;"></textarea>
+      <div class="comment-composer-actions">
+        <button id="composer-submit" class="btn-primary" type="button">Comment</button>
+        <button id="composer-cancel" class="btn-secondary" type="button">Cancel</button>
+      </div>
+    </div>
+
+    <p id="comment-error" class="error-text" hidden></p>
+    <div id="comment-list" class="comment-list"></div>
+  </aside>
+</div>
 
 <script src="vendor/quill.js"></script>
 <script src="vendor/quill-cursors.js"></script>
