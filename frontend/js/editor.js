@@ -3,6 +3,7 @@ import { WS_BASE } from "./config.js";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { QuillBinding } from "y-quill";
+import { initComments } from "./comments.js";
 
 requireAuthOrRedirect();
 
@@ -98,6 +99,21 @@ async function init() {
   provider.awareness.setLocalStateField("user", {
     name: me.username,
     color: colorForUser(me.id),
+  });
+
+  // Commenting is the one write a commenter is allowed, so it's gated on its
+  // own check rather than on canEdit. The server enforces the same rule; this
+  // only decides what the UI offers.
+  const canComment = ["owner", "editor", "commenter"].includes(docMeta.my_role);
+  initComments({
+    docId,
+    ydoc,
+    ytext,
+    quill,
+    provider,
+    me,
+    canComment,
+    isOwner: docMeta.my_role === "owner",
   });
 
   provider.on("status", ({ status }) => {

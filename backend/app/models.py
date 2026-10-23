@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, func
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -60,6 +60,9 @@ class Document(Base):
     activity: Mapped[list["EditActivity"]] = relationship(
         back_populates="document", cascade="all, delete-orphan"
     )
+    comment_threads: Mapped[list["CommentThread"]] = relationship(
+        back_populates="document", cascade="all, delete-orphan"
+    )
 
 
 class Permission(Base):
@@ -99,4 +102,69 @@ class EditActivity(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     document: Mapped["Document"] = relationship(back_populates="activity")
+    user: Mapped["User"] = relationship()
+
+
+class CommentThread(Base):
+    """
+    One conversation pinned to a range of a document.
+
+    The anchor is a pair of Yjs *relative* positions (base64-encoded), not
+    integer offsets. A relative position names a place in the CRDT's item
+    graph rather than a character count, so it keeps pointing at the same
+    words while other people insert and delete text above it. Plain offsets
+    would silently drift the moment anyone edited earlier in the document
+    the comment would still render, just attached to the wrong sentence.
+
+    The anchor and the resolved state live here rather than on individual
+    comments because they describe the conversation, not any one message in
+    it. Replies are just Comment rows sharing a thread_id.
+    """
+
+    __tablename__ = "comment_threads"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), index=True)
+    anchor_start: Mapped[str] = mapped_column(String(512))
+    anchor_end: Mapped[str] = mapped_column(String(512))
+    # The text that was selected when the thread was opened. Kept so an
+    # "orphaned" thread ,one whose anchor no longer resolves because the
+    # text it referred to was deleted ,can still show what it was about.
+    quoted_text: Mapped[str] = mapped_column(String(300), default="")
+    resolved_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    resolved_by: Mapped[str | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    document: Mapped["Document"] = relationship(back_populates="comment_threads")
+    comments: Mapped[list["Comment"]] = relationship(
+        back_populates="thread",
+        cascade="all, delete-orphan",
+        order_by="Comment.created_at",
+    )
+
+
+class Comment(Base):
+    """
+    A single message in a CommentThread. The first one is the comment that
+    opened the thread; the rest are replies. The WebSocket room can only
+    enforce permissions at connection time, so anything written into the CRDT
+    is editable by anyone allowed to join. Keeping comments out of it is what
+    makes 'commenter' a role the server can actually enforce ,a commenter
+    writes here and is refused by /documents, instead of being merely asked
+    not to type by a read-only editor.
+    """
+
+    __tablename__ = "comments"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    thread_id: Mapped[str] = mapped_column(ForeignKey("comment_threads.id"), index=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    body: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    thread: Mapped["CommentThread"] = relationship(back_populates="comments")
     user: Mapped["User"] = relationship()

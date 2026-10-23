@@ -5,8 +5,10 @@ from .models import Document, Permission, Role
 
 
 async def get_effective_role(db: AsyncSession, document_id: str, user_id: str) -> str | None:
-    """Returns 'owner', a Role value ('viewer' | 'commenter' | 'editor'), or
-    None if this user has no access to the document at all."""
+    """
+    Returns 'owner', a Role value ('viewer' | 'commenter' | 'editor'), or
+    None if this user has no access to the document at all.
+    """
     doc = (await db.execute(select(Document).where(Document.id == document_id))).scalar_one_or_none()
     if doc is None:
         return None
@@ -24,6 +26,16 @@ async def get_effective_role(db: AsyncSession, document_id: str, user_id: str) -
 
 def can_edit(role: str | None) -> bool:
     return role in ("owner", Role.editor.value)
+
+
+def can_comment(role: str | None) -> bool:
+    """
+    Commenters sit between viewer and editor: they can't touch the document
+    text, but they can open and reply to comment threads. Editors and the owner
+    can comment too ,being allowed to rewrite a sentence outright implies
+    being allowed to question it.
+    """
+    return role in ("owner", Role.editor.value, Role.commenter.value)
 
 
 def can_manage_permissions(role: str | None) -> bool:

@@ -12,6 +12,7 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 from .config import settings
 from .logging_config import configure_logging, get_logger
 from .routers import auth as auth_router
+from .routers import comments as comments_router
 from .routers import documents as documents_router
 from .routers import permissions as permissions_router
 from .websocket.editor import (
@@ -81,6 +82,7 @@ app.add_middleware(
 app.include_router(auth_router.router)
 app.include_router(documents_router.router)
 app.include_router(permissions_router.router)
+app.include_router(comments_router.router)
 
 # Real-time collaborative editing: wss://host/ws/{doc_id}?token=...
 app.mount("/ws", docsync_ws_app)
